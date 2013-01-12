@@ -1,0 +1,114 @@
+<!-- efeito de flama azul adaptado por chcl -->
+<canvas id="canvas"></canvas>
+
+
+<style id="jsbin-css">
+/*estilo*/
+* {margin: 0; padding: 0;}
+#canvas {display: block;}
+</style>
+<script>
+window.onload = function(){
+  var canvas = document.getElementById("canvas");
+	var ctx = canvas.getContext("2d");
+	
+	//canvas pagina inteira
+	var W = window.innerWidth, H = window.innerHeight;
+	canvas.width = W;
+	canvas.height = H;
+	
+	var particles = [];
+	var mouse = {};
+	
+	//gerando particulas 
+	var particle_count = 300;
+	for(var i = 0; i < particle_count; i++)
+	{
+		particles.push(new particle());
+	}
+	
+	//mouse
+	canvas.addEventListener('mousemove', track_mouse, false);
+	
+	function track_mouse(e)
+	{
+		//enquanto mouse na tela = canvas nela
+	
+		mouse.x = e.pageX;
+		mouse.y = e.pageY;
+	}
+	
+	function particle()
+	{
+		//PARAMETROS speed, life, location, life, colors
+		//alcance speed.x = -2.5 to 2.5 
+		//alcance speed.y  = -15 to -5 para chama ir para cima
+		//modifica-se o y para aparecer mais a chama MUITO BONS PARAMETROS
+		this.speed = {x: -5+Math.random()*5, y: -15+Math.random()*0};
+		//mouse coordenadas
+		//agora a chama segue o mouse
+		if(mouse.x && mouse.y)
+		{
+			this.location = {x: mouse.x, y: mouse.y};
+		}
+		else
+		{
+			this.location = {x: W/2, y: H/2};
+		}
+		//alcance radial = 10-30
+		this.radius = 18+Math.random()*20;
+		//alcance life(bom parametro) = 20-30
+		this.life = 200+Math.random()*10;
+		this.remaining_life = this.life;
+		//cores azuladas
+		this.r = Math.round(Math.random()*35);
+		this.g = Math.round(Math.random()*150);
+		this.b = Math.round(Math.random()*205);
+	}
+	
+	function draw()
+	{
+		//canvas cinza
+		//tempo
+	
+	
+		ctx.globalCompositeOperation = "source-over";
+		ctx.fillStyle = "grey";
+      //se modificar aqui p fundo nao retorna e o rastro Ã© permanente
+		ctx.fillRect(0, 0, W, H);
+		ctx.globalCompositeOperation = "lighter";
+		
+		for(var i = 0; i < particles.length; i++)
+		{
+			var p = particles[i];
+			ctx.beginPath();
+			//mudando opacidade de acordo com o parametro life
+			//opacidade vai de 0 ao final de acordo com o parametro life
+			p.opacity = Math.round(p.remaining_life/p.life*100)/100
+			//um degradet branco gradiente no preenchimento
+			var gradient = ctx.createRadialGradient(p.location.x, p.location.y, 0, p.location.x, p.location.y, p.radius);
+			gradient.addColorStop(0, "rgba("+p.r+", "+p.g+", "+p.b+", "+p.opacity+")");
+			gradient.addColorStop(0.5, "rgba("+p.r+", "+p.g+", "+p.b+", "+p.opacity+")");
+			gradient.addColorStop(1, "rgba("+p.r+", "+p.g+", "+p.b+", 0)");
+			ctx.fillStyle = gradient;
+			ctx.arc(p.location.x, p.location.y, p.radius, Math.PI*2, false);
+			ctx.fill();
+			
+			//movendo  particulas
+			p.remaining_life--;
+			p.radius--;
+			p.location.x += p.speed.x;
+			p.location.y += p.speed.y;
+			
+			//regenerando as particulas
+			if(p.remaining_life < 0 || p.radius < 0)
+			{
+				//repondo a velha pela nova
+				particles[i] = new particle();
+			}
+		}
+	}
+	//intervalo
+	setInterval(draw, 33);
+}
+</script>
