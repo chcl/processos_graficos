@@ -1,0 +1,71 @@
+var SCREEN_WIDTH    = 465;
+var SCREEN_HEIGHT   = 465;
+var SCREEN_CENTER_X = SCREEN_WIDTH/2;
+var SCREEN_CENTER_Y = SCREEN_HEIGHT/2;
+
+
+var Particle = tm.createClass({
+    superClass: tm.app.CanvasElement,
+    
+    init: function(x, y) {
+        this.superInit();
+        
+        this.position.set(x, y);
+        this.beginPosition = this.position.clone();
+        this.velocity = tm.geom.Vector2(
+            tm.util.Random.randint(-5, 5),
+            tm.util.Random.randint(-6, 3)
+        );
+        this.size = tm.util.Random.randint(35, 45);
+        this.blendMode = "lighter";
+    },
+    
+    update: function() {
+        this.position.add(this.velocity);
+        this.velocity.x += (this.beginPosition.x-this.x)/(this.size/2);
+        this.velocity.y -= 0.4;
+        this.size -= 1.3;
+        
+        if (this.size < 1) {
+            this.remove();
+        }
+        else {
+            var radialGradient = tm.graphics.RadialGradient(0, 0, 0, 0, 0, this.size);
+            radialGradient.addColorStopList([
+                { offset: 0.0, color: "hsla({0}, 75%, 50%, 1.0)".format(tm.util.Random.randint(0, 60)) },
+                { offset: 1.0, color: "hsla({0}, 75%, 50%, 0.0)".format(tm.util.Random.randint(0, 60)) },
+            ]);
+            this.fillStyle = radialGradient.toStyle();
+        }
+    },
+    
+    draw: function(canvas) {
+        canvas.fillCircle(0, 0, this.size);
+    }
+});
+
+
+tm.main(function() {
+    var app = tm.app.CanvasApp("#world");
+    app.resize(SCREEN_WIDTH, SCREEN_HEIGHT);
+    app.fitWindow();
+    
+    app.currentScene.update = function() {
+        var pointing = app.pointing;
+        for (var i=0; i<10; ++i) {
+          Particle(pointing.x, pointing.y).addChildTo(this);
+        }
+    };
+    
+    app.run();
+});
+
+
+
+
+
+
+
+
+
+
